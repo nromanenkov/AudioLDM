@@ -18,11 +18,16 @@ class DDIMSampler(object):
         self.model = model
         self.ddpm_num_timesteps = model.num_timesteps
         self.schedule = schedule
+        self.device = (
+            torch.device("cuda" if torch.cuda.is_available() else
+                         # "mps" if torch.backends.mps.is_available() else
+                         "cpu")
+        )
 
     def register_buffer(self, name, attr):
         if type(attr) == torch.Tensor:
-            if attr.device != torch.device("cuda"):
-                attr = attr.to(torch.device("cuda"))
+            if attr.device != torch.device(self.device):
+                attr = attr.to(torch.device(self.device))
         setattr(self, name, attr)
 
     def make_schedule(
